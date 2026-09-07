@@ -1,0 +1,2 @@
+{"ts": "2026-09-07T17:37:44Z", "event": "run_start", "stage": null, "fact_id": null, "source_id": null, "detail": {"scope": "full_sweep", "sources": ["amazon-ads-api-docs", "amzn-tools-docs-readme", "amzn-tools-docs-repo"]}}
+{"ts": "2026-09-07T17:38:46Z", "event": "stage_invoked", "stage": "discover", "fact_id": null, "source_id": null, "detail": {"source_ids": ["amazon-ads-api-docs", "amzn-tools-docs-readme", "amzn-tools-docs-repo"], "fetch_method_recheck_days": 30, "staleness_threshold_days": 180}}

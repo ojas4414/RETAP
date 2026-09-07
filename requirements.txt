@@ -1,0 +1,13 @@
+# Runtime dependencies for scripts/.
+#
+# fetch_url.py and hash_compare.py are stdlib-only by design - the fetch and
+# hash paths must work even if nothing here is installed.
+#
+# markitdown normalizes PDF/docx into markdown for clean_content.py. The [pdf]
+# extra is required: a plain `pip install markitdown` installs a version that
+# recognizes PDFs and then fails at conversion time with a dependency error, so
+# a registered PDF source would look fine until the first run touched it.
+markitdown[pdf]>=0.1.0
+
+# Tests only.
+pytest>=8.0

@@ -23,7 +23,7 @@ Requires Node.js 18+, Python 3.10+, and Claude Code.
 git clone https://github.com/ojas4414/RETAP.git amazon-ads-kb
 cd amazon-ads-kb
 
-pip install 'markitdown[pdf]'      # PDF/docx normalization
+pip install -r requirements.txt    # markitdown[pdf] for PDF/docx, pytest
 npx playwright install             # browser binaries for JS-rendered pages
 export TAVILY_API_KEY=...          # search MCP key, read from the environment
 ```
