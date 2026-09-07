@@ -210,9 +210,20 @@ sharpest example in this project of the code-vs-judgment line being drawn in the
 wrong place.
 
 Not finished: **only one of the three registered sources has ever produced
-facts.** The Amazon Ads API docs yielded all 12 concepts; the GitHub repo page
-returned an error shell to a plain fetch, and the raw README held no durable
-Amazon Ads facts. Three source *types* are wired and fetched end to end, but the
+facts**, and the reason is source selection rather than pipeline failure. The
+Amazon Ads API docs yielded all 12 concepts. The GitHub repo page produced none —
+but the logs are clear that the machinery worked: the static attempt failed the
+usable-content check, Discover flipped the registry to `js_rendered`, Playwright
+rendered the page, and Extract then declined to emit anything because a repo
+landing page is a file tree, commit counts and language stats, not Amazon Ads
+documentation. The right source was the files inside that repo, not its landing
+page. The raw README likewise held no durable facts.
+
+(One earlier run *did* hash a GitHub error shell as real content — but only
+because the Playwright MCP was unavailable in that session, so no fallback was
+possible. Discover diagnosed it correctly and declined to retry, logging that "a
+retry here would be theatre, not recovery." The length-based check is still a
+genuine weakness; it just is not what cost this bundle its facts.) Three source *types* are wired and fetched end to end, but the
 bundle rests on one of them. The bundle is also regenerated per run rather than
 accumulated across many, so document count depends on the sources registered;
 a PDF path exists in `clean_content.py` but no PDF source is registered; and

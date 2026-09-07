@@ -187,11 +187,17 @@ error: a broken hook must never wedge the pipeline.
   document mentions another concept; nothing infers relatedness beyond that.
 - **The trusted-domain list is short by design.** Unlisted domains score low
   *pending review* and are flagged, never silently accepted or rejected.
-- **The usable-content check is length-based.** A page that comes back
-  non-trivially long passes it, so GitHub's 2.7KB "Uh oh! There was an error
-  while loading" shell was accepted as content and yielded zero facts. Detecting
-  *worthless* content, as opposed to *absent* content, needs more than a length
-  threshold.
+- **Source selection matters more than the fetch machinery.** One registered
+  source is a GitHub repo *landing page*. The fetch pipeline handled it
+  correctly — the static attempt failed the usable-content check, the registry
+  flipped it to `js_rendered`, and Playwright rendered it properly — but a repo
+  landing page is a file tree, star counts and language stats, so Extract
+  correctly emitted zero facts from it. The documentation is in the files
+  *inside* the repo, which is what should have been registered.
+- **The usable-content check is length-based**, and in one earlier run (with
+  Playwright unavailable, so no fallback was possible) a 2.7KB GitHub error shell
+  passed it and was hashed as real content. Detecting *worthless* content is a
+  different problem from detecting *absent* content.
 - **Contradictions escalate to a human.** After one automatic re-verification, an
   unresolved disagreement is written as a `flagged_conflict` with both values and
   both sources. The system never picks a winner.
