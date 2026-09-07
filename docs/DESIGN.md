@@ -182,10 +182,22 @@ Chrome windows) were wrong, and only looking at the actual state settled it.
 Working and demonstrated on live data: the five-stage pipeline end to end,
 producing the **12 OKF concept documents and index** now in `knowledge/`;
 skip-if-unchanged
-(a source with a matching hash is skipped without a fetch); the static ↔
-JS-rendered fetch-method flip and its memoization; deterministic cleaning verified
-by identical hashes across separate renders; and all four hooks blocking real
-violations.
+(a source with a matching hash is skipped without a fetch); the `static` →
+`js_rendered` fetch-method flip and its memoization; and deterministic cleaning
+verified by identical hashes across separate renders.
+
+Two claims worth narrowing rather than leaving comfortable:
+
+- **Only one hook has blocked a real violation.** `schema_validation.py` fired
+  eleven times across runs, rejecting malformed stage handoffs. The other three
+  are proven by tests, not by having fired in a live run — nothing has yet tried
+  to write outside its scope during an actual pass.
+- **The fetch-method flip is one-directional in practice.** `static` →
+  `js_rendered` was recorded by the system when the usable-content check failed.
+  The reverse — re-probing a `js_rendered` source and demoting it back to
+  `static` after 30 days — has never fired. The one other source marked
+  `js_rendered` was set by hand after a run observed the page was a JS app but
+  correctly declined to write a registry change outside its own mandate.
 
 The bundle's content-derived `fact_id`s are reproducible: running
 `scripts/mint_fact_id.py` on a published document's concept and value returns
@@ -197,9 +209,12 @@ but unavailable in Merge's toolbox — an LLM was being asked to compute a SHA-2
 sharpest example in this project of the code-vs-judgment line being drawn in the
 wrong place.
 
-Not finished: the bundle in this repo is regenerated per run rather than
+Not finished: **only one of the three registered sources has ever produced
+facts.** The Amazon Ads API docs yielded all 12 concepts; the GitHub repo page
+returned an error shell to a plain fetch, and the raw README held no durable
+Amazon Ads facts. Three source *types* are wired and fetched end to end, but the
+bundle rests on one of them. The bundle is also regenerated per run rather than
 accumulated across many, so document count depends on the sources registered;
-three source types are registered (JS-rendered SPA, static HTML, raw markdown) and
 a PDF path exists in `clean_content.py` but no PDF source is registered; and
 contradiction handling is implemented and specified but has not been exercised
 against two genuinely disagreeing sources, because none of the registered sources
