@@ -46,12 +46,19 @@ order:
 | Look up the source domain's trust baseline | code | `scripts/trust_lookup.py` |
 | Decide what a *mismatch means* — contradiction, supersession, or different scope | judgment | the prompt |
 
-An exact duplicate — the overwhelmingly common case when a page is re-fetched
-unchanged — is settled by a string comparison and never reaches a model. A trust
-score is never reasoned from scratch; the list produces a baseline and judgment
-adjusts it by at most ±10, a bound tight enough that no adjustment can move a
-source across a band boundary. Judgment is spent only where there is no closed
-form.
+An exact duplicate is settled by a string comparison and never reaches a model.
+A trust score is never reasoned from scratch; the list produces a baseline and
+judgment adjusts it by at most ±10, a bound tight enough that no adjustment can
+move a source across a band boundary. Judgment is spent only where there is no
+closed form.
+
+Worth stating plainly: **the duplicate path has not been exercised on real
+data.** Every verdict every run has produced is `new` — no duplicates, no
+contradictions, no supersessions. That is partly by construction: when a page is
+re-fetched unchanged, Discover skips it before Extract ever runs, so the cheap
+comparison downstream rarely gets the chance to fire. The dedup pre-filter and
+the two gates on `confirmed_by` are implemented and unit-tested, not
+battle-tested.
 
 The same split appears in Discover (fetch, clean, hash, diff — all code; the only
 judgment is none), in Extract (cleaning is code, fact boundaries are judgment), in
@@ -129,10 +136,21 @@ verified empirically against Claude Code 2.1.261 rather than assumed. All four
 fail **closed** on a violation and **open** on their own internal error: a broken
 hook must never wedge the pipeline.
 
-These caught real defects during development, not hypothetical ones — a batched
-Validate call that violated its own per-fact contract, a Publish invoked without a
-Merge verdict behind it, and a `duplicate_exact` that must never reach Publish at
-all.
+One of these has caught real defects in live runs; the rejections are in the
+logs, verbatim:
+
+- `missing required field(s): candidate, stored_facts` — the orchestrator had
+  batched all facts into a single Validate call, violating Validate's own
+  per-fact contract.
+- `missing required field(s): concept_index` — a stage handoff omitting a field
+  the target requires.
+- `mode=<one of resume_check>` and `missing required field(s): status` — a
+  resume check being validated as if it were a verdict, which is what led to
+  mode calls getting their own schema.
+
+The other three hooks are proven by tests rather than by firing in a live run.
+Nothing has yet attempted a write outside its scope during an actual pass, which
+is the outcome you want but is not the same as having been tested by events.
 
 ## Re-run safety
 
@@ -168,3 +186,11 @@ Every published fact carries `sources`, `confirmed_by`, `trust_score` and
 Where sources genuinely disagree and one re-verification fails to resolve it, the
 system writes a `flagged_conflict` with both values and both sources and stops.
 It never picks a winner.
+
+**None of this paragraph has been exercised on live data.** Every registered
+source is first-party Amazon documentation and they do not contradict each other,
+so no supersession has ever amended a value and no `flagged_conflict` has ever
+been written. The formats are specified in `conflict-resolution`, the verdicts
+exist in Validate's schema, and the hook enforces their shape — but the only
+evidence they behave correctly is tests, not runs. Proving them needs two sources
+that genuinely disagree, which is the first thing I would add next.
