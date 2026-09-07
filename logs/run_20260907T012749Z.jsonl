@@ -1,2 +1,0 @@
-{"ts": "2026-09-07T01:27:49Z", "event": "run_start", "stage": null, "fact_id": null, "source_id": null, "detail": {"scope": "single_source", "source_ids": ["amazon-ads-api-docs"], "run_max_total_retries": 3, "contradiction_max_retries": 1, "source_failure_notify_threshold": 3}}
-{"ts": "2026-09-07T01:28:15Z", "event": "stage_invoked", "stage": "discover", "fact_id": null, "source_id": "amazon-ads-api-docs", "detail": {"fetch_method_recheck_days": 30}}

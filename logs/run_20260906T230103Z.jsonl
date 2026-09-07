@@ -1,1 +1,0 @@
-{"ts": "2026-09-06T23:01:03Z", "event": "run_start", "stage": null, "fact_id": null, "source_id": null, "detail": {"scope": "single_source", "source_ids": ["amazon-ads-api-docs"], "run_type": "first_run", "concept_index": []}}
