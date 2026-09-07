@@ -53,6 +53,39 @@ Run the tests with:
 python -m pytest tests/ -q
 ```
 
+### What to expect on a fresh clone
+
+**`update the bundle` on a fresh clone will report every source unchanged and
+write nothing.** That is not a failure — it is the re-run guarantee. The registry
+committed with this repo already holds a content hash for each source, so Discover
+compares, finds no change, and correctly declines to re-fetch or re-process. The
+run log records the skip.
+
+To watch it actually acquire knowledge, do one of these:
+
+```bash
+# 1. Ingest a source it has never seen. This is the honest demo.
+claude -p "ingest https://advertising.amazon.com/API/docs/en-us/reference/api-overview, update the bundle"
+
+# 2. Or force an existing source to be treated as uncaptured, then run.
+python scripts/hash_compare.py reset amazon-ads-api-docs
+claude -p "update the bundle"
+```
+
+Option 2 clears that source's stored hash, so the next run reports `changed`,
+re-fetches, and republishes its concepts.
+
+**Three things will silently stop it if they are missing:**
+
+| If | Then |
+|---|---|
+| The workspace is not trusted | Claude Code ignores the whole `permissions` block and every `python scripts/...` call is refused. Accept the trust prompt on first launch. |
+| `npx playwright install` was not run | The JS-rendered source cannot be fetched. The two static sources still work. |
+| `TAVILY_API_KEY` is unset | The search MCP fails to start. Nothing in the pipeline depends on it today, so the run still completes. |
+
+A full run takes roughly 20-40 minutes, most of it waiting on model calls and one
+browser render. Progress is visible in `logs/run_<timestamp>.jsonl` as it goes.
+
 On Windows or a restricted environment where the default system temp directory
 is unavailable, use:
 
