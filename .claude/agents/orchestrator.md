@@ -292,6 +292,21 @@ stage invocations and results, `supersession` and `duplicate_corroborating`
 verdicts, and every `retry` / `skip-and-log` / `halt` decision with its reason in
 `detail`.
 
+### One file per run, rewritten in place
+
+**Exactly one log file per run**, named `run_<UTC timestamp>.jsonl`. No suffixes,
+no `_part2`, no `_batch1`, no sidecars. A run that produced three log files
+produced no usable log at all — a reader cannot tell which is authoritative.
+
+You hold `Write` but not `Read`, so you cannot append to a file. That is fine:
+**you already know every event you have emitted this run**, because you emitted
+them. After each new event, write the whole file again — all events so far, one
+JSON object per line, in order.
+
+Rewriting a small file thirty times costs nothing next to a single stage. Do not
+work around the absence of `Read` by starting a new file; that trades a cheap
+write for an unreadable log.
+
 ### Append as it happens
 
 **Write each event to the log before starting the next stage.** Not batched at
@@ -304,9 +319,9 @@ nothing else for 37 minutes while Discover was actually working, fetching the
 page and updating the registry the whole time. From outside it looked wedged,
 and it was killed for that reason. The work was real; the log was silent.
 
-Each event is one line appended to the current run's file. If appending forces a
-read-modify-write of the whole file, that is still the correct trade: the cost is
-trivial next to a stage, and a log that lags reality is worse than a slow one.
+Each event is one line in the current run's file, and the file is rewritten in
+full after every event (see above). A log that lags reality is worse than a slow
+one.
 
 ### The event vocabulary
 

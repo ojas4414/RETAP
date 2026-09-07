@@ -2,28 +2,28 @@
   "sources": {
     "amazon-ads-api-docs": {
       "consecutive_failures": 0,
-      "content_hash": "61a741ff3e41e34d0c5d7e239faab7f622ffe68e12b8352b5af9cbcdc5108987",
+      "content_hash": "488a817838cbba0c234bc2a6f22e3e712ec3f00b492a9330fc1b03b48b300e25",
       "fetch_method": "js_rendered",
       "fetch_method_last_probed": "2026-09-06T16:07:37Z",
-      "last_checked": "2026-09-07T02:02:44Z",
+      "last_checked": "2026-09-07T05:22:23Z",
       "official": true,
       "url": "https://advertising.amazon.com/API/docs/en-us/"
     },
     "amzn-tools-docs-readme": {
       "consecutive_failures": 0,
-      "content_hash": null,
+      "content_hash": "5fd790ee00f61eab70169ea8d4cd99853afabaed3e2981f11a1a57158c58ca70",
       "fetch_method": "static",
       "fetch_method_last_probed": null,
-      "last_checked": null,
+      "last_checked": "2026-09-07T05:30:26Z",
       "official": true,
       "url": "https://raw.githubusercontent.com/amzn/ads-advanced-tools-docs/main/README.md"
     },
     "amzn-tools-docs-repo": {
       "consecutive_failures": 0,
-      "content_hash": null,
+      "content_hash": "fe0dffeaa9127b006319096ec7cb91e938a7b806dc5fe460a8593fc4a7d164fa",
       "fetch_method": "static",
       "fetch_method_last_probed": null,
-      "last_checked": null,
+      "last_checked": "2026-09-07T05:29:55Z",
       "official": true,
       "url": "https://github.com/amzn/ads-advanced-tools-docs"
     }
