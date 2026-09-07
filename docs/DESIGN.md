@@ -105,6 +105,23 @@ whole file after each event. A separate attempt to work around the missing `Read
 by opening sidecar files produced three logs for one run, which is worse than one
 slow log.
 
+**Publish does not verify it wrote everything it was handed.** A run staged 13
+concepts and published 12, and nothing noticed: the index — written by Publish —
+listed all 13, so `knowledge/index.md` pointed at a document that did not exist.
+The index is specified as *derived from filenames*, which is exactly the property
+that would have caught this, but it is generated from Publish's own idea of what
+it wrote rather than from a directory listing. A count assertion between staging
+and `concepts/` at end of run would close it.
+
+**Trust adjustment is bounded in prose but not in code.** The same staged concept
+carried `trust_score: 25` on a fact sourced from `advertising.amazon.com`, whose
+list baseline is 92. The ±10 rule makes 82–100 the only valid range, and 25 is
+not inside any band. The schema hook checks that a trust score is an integer in
+0–100, which 25 satisfies — nothing checks it against the baseline the lookup
+returned. That document was withheld from the bundle rather than published with a
+score the system's own rules forbid. Enforcing the bound needs the hook to see
+both the baseline and the final score, which means Validate must report both.
+
 **Cross-concept relatedness is not modelled.** Cross-links are written when a
 document explicitly mentions another concept, and an end-of-run pass resolves
 `[[?pending]]` markers whose target has since been published. Nothing infers that

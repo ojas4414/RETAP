@@ -11,5 +11,4 @@
 - [[api-integration-dashboard]] — the dashboard used to monitor and manage an Amazon Ads API integration.
 - [[unified-reporting]] — Unified Reporting, including new-to-brand and Adelaide metrics availability and extended 24-month data retention.
 - [[export-apis]] — the Export APIs, offering campaign management information in a common model across sponsored ads products, replacing the Snapshots APIs.
-- [[reporting-api]] — the new reporting API, now in open beta with multi-dimensional, cross-account, and cross ad-product reporting.
 - [[bulk-operations]] — Bulksheets and bulk operations for sponsored ads and DSP, including export campaign filtering and the DSP Creative Association Status column.
