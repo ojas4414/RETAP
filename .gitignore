@@ -1,6 +1,7 @@
 # Transient working files written during a run.
 scratchpad/
 .playwright-mcp/
+*.raw.html
 
 # Merge's staging layer is per-run working state, not a deliverable.
 staging/*.json
