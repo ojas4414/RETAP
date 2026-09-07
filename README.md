@@ -119,6 +119,13 @@ not a constraint.
 All four fail **closed** on a rule violation and **open** on their own internal
 error: a broken hook must never wedge the pipeline.
 
+## Documents
+
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — system and agent architecture,
+  component responsibilities, data flow, where the code/judgment line falls.
+- [`docs/DESIGN.md`](docs/DESIGN.md) — tradeoffs and why, what I would improve,
+  how Claude Code was used.
+
 ## Known limitations
 
 - **`STAGE_TIMEOUT_SECONDS` is advisory.** A `Task` call blocks until the
