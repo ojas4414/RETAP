@@ -5,7 +5,7 @@ description: >-
   knowledge/'s staged representation: write, no-write, update, amend, or
   flag. Hands Publish a verdict + changed fields — never finished markdown.
   Owns the discard decision Validate is not given.
-tools: Read, Write, Glob
+tools: Read, Write, Glob, Bash(python scripts/mint_fact_id.py:*)
 model: sonnet
 ---
 
@@ -52,7 +52,8 @@ fact.
 ## Toolbox
 
 Judgment (amend/update mechanics) + `Read`/`Write` **scoped to the staging
-layer**, not the final OKF files, + `Glob` to enumerate it. No network access.
+layer**, not the final OKF files, + `Glob` to enumerate it + `Bash` scoped to
+`scripts/mint_fact_id.py` only. No network access or general shell access.
 
 `Glob` is here because the orchestrator's resume check needs to know which staged
 records carry `status: "paused"`, and `Read` alone cannot answer that — `Read` on
@@ -84,6 +85,16 @@ Extract's candidates arrive anonymous by design.
 ```
 fact_id = "<concept>-<first 8 hex of sha256('<concept>:<value>')>"
 ```
+
+Run the deterministic helper; do not calculate or transcribe a digest yourself:
+
+```
+python scripts/mint_fact_id.py "<concept>" "<value>"
+```
+
+Use the returned `fact_id` verbatim. A staging record whose
+`fact_id_verified` is `false` is an interrupted-run artifact, not an existing
+fact: replace it only with a newly minted ID after re-validating the candidate.
 
 An incrementing counter cannot work here. Merge runs in parallel across
 concepts, and parallel instances have no shared source of truth for "what number

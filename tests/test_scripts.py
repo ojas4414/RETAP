@@ -20,6 +20,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 import clean_content  # noqa: E402
 import hash_compare  # noqa: E402
+import mint_fact_id  # noqa: E402
 import trust_lookup  # noqa: E402
 
 
@@ -106,6 +107,33 @@ def test_failure_and_success_signals_are_distinct(tmp_path):
     # A successful capture resets the counter.
     call("compare", "s1", "-", "--update", stdin="ok")
     assert call("get", "s1")["consecutive_failures"] == 0
+
+
+def test_reset_marks_an_interrupted_capture_for_reprocessing(tmp_path):
+    reg = tmp_path / "sources.json"
+    script = str(ROOT / "scripts" / "hash_compare.py")
+
+    subprocess.run(
+        [sys.executable, script, "--registry", str(reg), "compare", "s1", "-", "--update"],
+        input="captured", text=True, check=True, capture_output=True,
+    )
+    result = json.loads(subprocess.run(
+        [sys.executable, script, "--registry", str(reg), "reset", "s1"],
+        text=True, check=True, capture_output=True,
+    ).stdout)
+
+    assert result["status"] == "reset"
+    assert hash_compare.load_registry(reg)["sources"]["s1"]["content_hash"] is None
+
+
+# --------------------------------------------------------------------------
+# mint_fact_id - IDs are code, stable across re-runs, and never hand-computed
+# --------------------------------------------------------------------------
+
+def test_fact_id_is_deterministic_and_concept_scoped():
+    value = "The snapshots API is deprecated."
+    assert mint_fact_id.mint_fact_id("snapshots-api", value) == "snapshots-api-03a3beb5"
+    assert mint_fact_id.mint_fact_id("other-concept", value) != "snapshots-api-03a3beb5"
 
 
 # --------------------------------------------------------------------------

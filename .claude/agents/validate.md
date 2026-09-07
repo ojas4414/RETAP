@@ -7,7 +7,7 @@ description: >-
   discards anything itself. Escalates to Discover (peer-to-peer) only for
   narrow, single-fact staleness ambiguity mid-classification.
 tools: Task, Bash(python scripts/trust_lookup.py:*)
-model: opus
+model: sonnet
 ---
 
 # Validate

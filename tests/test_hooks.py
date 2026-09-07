@@ -69,6 +69,13 @@ def test_config_values_are_required_never_defaulted():
     assert "fetch_method_recheck_days" in _hooklib.missing_fields("discover", {})
 
 
+def test_pipeline_stage_without_payload_is_blocked():
+    code, err = fire("schema_validation.py", {
+        "tool_input": {"subagent_type": "extract", "prompt": "extract this"},
+    })
+    assert code == BLOCK and "requires a JSON <PAYLOAD>" in err
+
+
 @pytest.mark.parametrize("verdict,missing", [
     ({"status": "new", "trust_score": 90}, []),
     ({"status": "supersession", "replaces": "f1", "trust_score": 90}, []),
@@ -149,6 +156,26 @@ def test_only_publish_writes_to_knowledge():
         if caller:
             event["agent_type"] = caller
         assert fire("validate_before_write.py", event)[0] == BLOCK
+
+
+def test_publish_write_requires_a_valid_handoff_transcript(tmp_path):
+    transcript = tmp_path / "session.jsonl"
+    payload = {"verdict_status": "new", "changed_fields": ["value"]}
+    entry = {
+        "message": {"content": [{
+            "type": "tool_use", "name": "Task", "input": {
+                "subagent_type": "publish",
+                "prompt": "<PAYLOAD>\n{}\n</PAYLOAD>".format(json.dumps(payload)),
+            },
+        }]},
+    }
+    transcript.write_text(json.dumps(entry) + "\n", encoding="utf-8")
+    code, _ = fire("validate_before_write.py", {
+        "cwd": ".", "agent_type": "publish",
+        "transcript_path": str(transcript),
+        "tool_input": {"file_path": "knowledge/concepts/min-bid.md"},
+    })
+    assert code == ALLOW
 
 
 def test_source_registry_is_exempt_from_the_write_gate():

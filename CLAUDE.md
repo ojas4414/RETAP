@@ -35,6 +35,15 @@ claude -p "ingest https://advertising.amazon.com/API/docs/en-us/, update the bun
 claude -p "update the bundle"          # re-check every known source
 ```
 
+If a prior run halted after Discover captured content but before Publish
+completed, reset each interrupted source before retrying so it is not skipped as
+unchanged:
+
+```
+python scripts/hash_compare.py reset <source_id>
+claude -p "update the bundle"
+```
+
 **Any request to ingest a URL, update/refresh the bundle, check sources for
 changes, or acquire knowledge means: invoke the `orchestrator` agent via `Task`.**
 Do not perform the pipeline inline, and do not invoke the five stages directly —

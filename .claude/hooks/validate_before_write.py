@@ -129,7 +129,11 @@ def main() -> None:
     # --- check 2: provenance ----------------------------------------------
     payload = spawning_payload(event.get("transcript_path") or "")
     if payload is None:
-        allow()  # cannot verify; check 1 already did the real work
+        # Cannot verify - the identity check above already did the real work.
+        # Failing closed here blocks every legitimate publish whenever the
+        # transcript cannot be parsed, which is how a run reached Publish and
+        # wrote nothing at all.
+        allow()
 
     missing = missing_fields(PUBLISHER, payload)
     if missing:

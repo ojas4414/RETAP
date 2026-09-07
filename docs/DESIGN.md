@@ -66,6 +66,21 @@ it inside would have forced the write-gate hook to exempt the one agent it most
 needs to constrain. Keeping it out means the rule stays absolute: *only Publish
 writes under `knowledge/`* — no carve-outs.
 
+### Model choice: sonnet everywhere, for now
+
+The orchestrator and Validate were specified as opus, because failure
+interpretation and contradiction-vs-supersession are the hardest judgment in the
+system. In practice the registered sources produce a corpus where that judgment
+never fires: a full run returned 13 verdicts, all `new` — zero duplicates, zero
+contradictions, zero supersessions. Opus was being paid for reasoning the data
+never asked for, at several times the cost and latency.
+
+All six agents now run on sonnet. The honest caveat: for a corpus where sources
+genuinely disagree, or where semantic dedup across differently-worded facts
+matters, opus on Validate is the better choice and the `model:` field is a
+one-line change. This is a cost decision made against observed verdict
+distribution, not a claim that the stages are equally easy.
+
 ## What I would improve
 
 **Concurrency was an afterthought.** The first full runs processed facts serially
@@ -143,6 +158,13 @@ inference ("38 browser processes, so Playwright is active" — they were the use
 Chrome windows) were wrong, and only looking at the actual state settled it.
 
 ## Honest status
+
+**Current-checkout correction (2026-09-07):** the current working tree has no
+published OKF concept documents or index. A live run reached Validate with 13
+facts, then halted at Merge because deterministic fact-ID minting was specified
+but unavailable in Merge's restricted toolbox. `scripts/mint_fact_id.py` now
+owns that operation. The next full run must create and verify the bundle before
+this repository can claim an end-to-end published demonstration.
 
 Working and demonstrated on live data: the five-stage pipeline end to end,
 producing 13 OKF concept documents with cross-links and an index; skip-if-unchanged

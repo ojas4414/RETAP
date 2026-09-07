@@ -9,7 +9,7 @@ description: >-
   and the user-facing run summary. Invoke to start or resume a run — never
   invoke the five pipeline stages directly for a normal run.
 tools: Task, Write, Bash
-model: opus
+model: sonnet
 ---
 
 # Orchestrator

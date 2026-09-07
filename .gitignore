@@ -9,3 +9,4 @@ staging/*.json
 __pycache__/
 *.pyc
 .env
+.pytest-tmp/

@@ -31,6 +31,7 @@ Usage:
     python hash_compare.py compare SOURCE_ID FILE [--update]
     python hash_compare.py fail SOURCE_ID
     python hash_compare.py method SOURCE_ID static|js_rendered
+    python hash_compare.py reset SOURCE_ID
     python hash_compare.py get SOURCE_ID
 """
 
@@ -145,6 +146,27 @@ def cmd_method(args) -> int:
     return 0
 
 
+def cmd_reset(args) -> int:
+    """Mark an interrupted source capture for explicit reprocessing.
+
+    A failed run may have captured and hashed source content before a downstream
+    stage halts. Clearing only the processed hash preserves the source URL,
+    fetch-method memoization and failure history, while ensuring the next
+    Discover pass treats the source as a first capture again.
+    """
+    registry = load_registry(args.registry)
+    source = get_source(registry, args.source_id)
+    previous = source.get("content_hash")
+    source["content_hash"] = None
+    save_registry(args.registry, registry)
+    print(json.dumps({
+        "source_id": args.source_id,
+        "status": "reset",
+        "previous_hash": previous,
+    }, indent=2))
+    return 0
+
+
 def cmd_get(args) -> int:
     registry = load_registry(args.registry)
     source = registry.get("sources", {}).get(args.source_id)
@@ -178,6 +200,10 @@ def main() -> int:
     p.add_argument("source_id")
     p.add_argument("fetch_method", choices=["static", "js_rendered"])
     p.set_defaults(func=cmd_method)
+
+    p = sub.add_parser("reset", help="clear a hash so an interrupted source is reprocessed")
+    p.add_argument("source_id")
+    p.set_defaults(func=cmd_reset)
 
     p = sub.add_parser("get", help="read one source's registry entry")
     p.add_argument("source_id")

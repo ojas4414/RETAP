@@ -14,7 +14,7 @@ and shared with validate_before_write.py.
 
 Failure policy:
   rule violation    -> BLOCK (exit 2), naming the missing field
-  no markers        -> ALLOW (a plain instruction carries no payload)
+  no markers        -> BLOCK for a pipeline stage; ALLOW for other Task calls
   internal error    -> ALLOW (a broken hook must never wedge the pipeline)
 """
 
@@ -35,7 +35,13 @@ def main() -> None:
     found, payload = extract_payload(tool_input.get("prompt") or "")
 
     if not found:
-        allow()  # no structured data in this call; nothing to check
+        if stage in STAGE_SCHEMAS:
+            block(
+                "schema-validation: pipeline stage '{}' requires a JSON "
+                "<PAYLOAD> block. Stage handoffs never use unstructured "
+                "instructions.".format(stage)
+            )
+        allow()  # not a pipeline stage; not this hook's business
 
     if isinstance(payload, str):
         block(

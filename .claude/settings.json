@@ -41,6 +41,7 @@
       "Bash(python scripts/hash_compare.py:*)",
       "Bash(python scripts/clean_content.py:*)",
       "Bash(python scripts/trust_lookup.py:*)",
+      "Bash(python scripts/mint_fact_id.py:*)",
       "Bash(date:*)",
       "mcp__playwright__browser_navigate",
       "mcp__playwright__browser_wait_for",

@@ -5,7 +5,8 @@ Code project. It discovers source material, extracts atomic facts, validates the
 against what already exists, merges duplicates, and publishes the result as OKF
 (Open Knowledge Format) documents.
 
-It is safe to re-run: running it twice applies only the real changes.
+It is designed to be safe to re-run: unchanged content is skipped and Merge
+suppresses exact duplicates.
 
 ```
 Discover  ->  Extract  ->  Validate  ->  Merge  ->  Publish
@@ -50,6 +51,24 @@ Run the tests with:
 
 ```bash
 python -m pytest tests/ -q
+```
+
+On Windows or a restricted environment where the default system temp directory
+is unavailable, use:
+
+```powershell
+python -m pytest tests/ -q -p no:cacheprovider --basetemp .pytest-tmp
+```
+
+## Recovering an Interrupted Run
+
+If a run halted after Discover captured a source but before Publish completed,
+explicitly reset that source's hash before retrying it. This preserves its URL
+and fetch-method memoization while making the next run process its content again:
+
+```powershell
+python scripts/hash_compare.py reset amazon-ads-api-docs
+claude -p "update the bundle"
 ```
 
 ## The one real decision
