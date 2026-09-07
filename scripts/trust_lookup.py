@@ -56,6 +56,10 @@ TRUSTED_DOMAINS: dict[str, tuple[str, int, bool]] = {
     # Path-scoped on purpose: github.com as a whole is not official, so any
     # other org under it still falls through to unlisted.
     "github.com/amzn":        ("official", 85, True),
+    # Raw file host for the same first-party org. Without this, the identical
+    # content scores 85 as a rendered page and 15 as a raw file - the sort of
+    # inconsistency the list exists to prevent.
+    "raw.githubusercontent.com/amzn": ("official", 85, True),
 }
 
 

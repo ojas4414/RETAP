@@ -1,0 +1,133 @@
+# amazon-ads-kb
+
+A dynamic knowledge acquisition system for Amazon Advertising, built as a Claude
+Code project. It discovers source material, extracts atomic facts, validates them
+against what already exists, merges duplicates, and publishes the result as OKF
+(Open Knowledge Format) documents.
+
+It is safe to re-run: running it twice applies only the real changes.
+
+```
+Discover  ->  Extract  ->  Validate  ->  Merge  ->  Publish
+```
+
+...supervised by an **orchestrator** that owns sequencing, failure handling and
+the run log.
+
+## Setup
+
+Requires Node.js 18+, Python 3.10+, and Claude Code.
+
+```bash
+git clone https://github.com/ojas4414/RETAP.git amazon-ads-kb
+cd amazon-ads-kb
+
+pip install 'markitdown[pdf]'      # PDF/docx normalization
+npx playwright install             # browser binaries for JS-rendered pages
+export TAVILY_API_KEY=...          # search MCP key, read from the environment
+```
+
+MCP servers are declared in `.mcp.json` and need no custom code — Claude Code is
+the MCP client. Playwright and Tavily are pre-built servers, registered the way a
+library is installed.
+
+On first launch Claude Code will ask you to trust the workspace. Accept it, or
+the `permissions` block in `.claude/settings.json` is ignored and every script
+call is refused.
+
+## Run it
+
+```bash
+claude -p "ingest https://advertising.amazon.com/API/docs/en-us/, update the bundle"
+claude -p "update the bundle"      # re-check every source in the registry
+```
+
+Any ingest/update request invokes the `orchestrator` agent, which drives the five
+stages in sequence. A URL that is not yet in `knowledge/.sources.json` is added to
+the registry first.
+
+Run the tests with:
+
+```bash
+python -m pytest tests/ -q
+```
+
+## The one real decision
+
+**Deterministic operations live in `scripts/`. Fuzzy judgment lives in agent
+prompts.**
+
+Fetching, hashing, diffing against the last run, stripping HTML, comparing
+strings, looking up a domain's trust baseline — these have one correct answer, so
+they are code, and they are testable in isolation. Deciding whether a paragraph
+holds one fact or three, whether two differently-worded statements mean the same
+thing, whether a source deserves belief — these have no closed form, so they are
+prompts.
+
+The line is drawn *inside* most stages, not just between them. Validate is the
+clearest case: an exact-match duplicate is caught by a string comparison with no
+model call at all, its trust baseline comes from a lookup in
+`scripts/trust_lookup.py`, and only what survives both reaches judgment — which
+then adjusts the baseline by at most ±10 rather than reasoning it from scratch.
+
+## Layout
+
+| Path | Purpose |
+|---|---|
+| `CLAUDE.md` | Scope, behaviour, the entry point, and the principle above |
+| `.claude/agents/` | Orchestrator + one prompt per pipeline stage |
+| `.claude/skills/` | OKF format, citations, dedup, trust scoring, conflict resolution |
+| `.claude/hooks/` | Four PreToolUse hooks — the enforcement layer |
+| `.claude/settings.json` | Hook registration and permissions |
+| `scripts/` | Deterministic helpers. No model calls |
+| `staging/` | Merge's working area, one file per concept |
+| `knowledge/` | The OKF bundle. Only Publish writes here |
+| `knowledge/.sources.json` | Source registry: per-source hash, last check, failure count |
+| `logs/` | Run logs, JSON Lines, one file per run |
+| `tests/` | Tests for `scripts/` and the hooks |
+
+## How re-run safety works
+
+Skip-if-unchanged is enforced in two places and nowhere else:
+
+- **Discover** hashes the *cleaned* content and compares it to the last run's
+  hash. Unchanged means nothing downstream runs.
+- **Merge** refuses to write on a `duplicate_exact` verdict, so an unchanged fact
+  never reaches Publish.
+
+This is why `scripts/clean_content.py` must be byte-stable: its output feeds the
+hash, and any instability there would turn every run into a false "changed".
+Verified in practice — three separate browser renders of the same JS-rendered
+page across five hours produced an identical SHA-256.
+
+Discover also memoizes *how* to fetch each source. A page that fails the
+usable-content check is marked `js_rendered` and thereafter goes straight to
+Playwright, re-probed with a plain fetch only every 30 days.
+
+## Enforcement
+
+Agent prompts describe intent; hooks enforce it. An instruction in a prompt is
+not a constraint.
+
+| Hook | Enforces |
+|---|---|
+| `schema_validation.py` | Every stage handoff carries a valid payload for its target |
+| `validate_before_write.py` | Only Publish writes to `knowledge/`, and only behind a real Merge verdict |
+| `orchestrator_write_scope.py` | The orchestrator writes `logs/` and runs only a clock |
+| `task_scope.py` | Validate may escalate only to Discover |
+
+All four fail **closed** on a rule violation and **open** on their own internal
+error: a broken hook must never wedge the pipeline.
+
+## Known limitations
+
+- **`STAGE_TIMEOUT_SECONDS` is advisory.** A `Task` call blocks until the
+  subagent returns, so the orchestrator cannot preempt a hung stage. The value is
+  useful for reasoning about a run afterwards, not as a guarantee.
+- **Cross-concept relatedness is not modelled.** Cross-links are written when a
+  document mentions another concept; nothing infers relatedness beyond that.
+- **The trusted-domain list is short by design.** Unlisted domains score low
+  *pending review* and are flagged, never silently accepted or rejected.
+- **Contradictions escalate to a human.** After one automatic re-verification, an
+  unresolved disagreement is written as a `flagged_conflict` with both values and
+  both sources. The system never picks a winner.

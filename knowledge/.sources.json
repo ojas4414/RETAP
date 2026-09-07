@@ -8,6 +8,24 @@
       "last_checked": "2026-09-07T02:02:44Z",
       "official": true,
       "url": "https://advertising.amazon.com/API/docs/en-us/"
+    },
+    "amzn-tools-docs-readme": {
+      "consecutive_failures": 0,
+      "content_hash": null,
+      "fetch_method": "static",
+      "fetch_method_last_probed": null,
+      "last_checked": null,
+      "official": true,
+      "url": "https://raw.githubusercontent.com/amzn/ads-advanced-tools-docs/main/README.md"
+    },
+    "amzn-tools-docs-repo": {
+      "consecutive_failures": 0,
+      "content_hash": null,
+      "fetch_method": "static",
+      "fetch_method_last_probed": null,
+      "last_checked": null,
+      "official": true,
+      "url": "https://github.com/amzn/ads-advanced-tools-docs"
     }
   },
   "version": 1
