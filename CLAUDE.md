@@ -28,6 +28,30 @@ Each stage is a subagent in `.claude/agents/`. Stages hand off structured data, 
 No stage reaches backwards; if a stage needs something upstream, it fails loudly instead
 of re-deriving it.
 
+## Running it
+
+```
+claude -p "ingest https://advertising.amazon.com/API/docs/en-us/, update the bundle"
+claude -p "update the bundle"          # re-check every known source
+```
+
+**Any request to ingest a URL, update/refresh the bundle, check sources for
+changes, or acquire knowledge means: invoke the `orchestrator` agent via `Task`.**
+Do not perform the pipeline inline, and do not invoke the five stages directly —
+the orchestrator owns sequencing, failure handling, the contradiction retry and
+the run log, and a stage run outside it has none of that.
+
+If the request names a URL that is not yet in `knowledge/.sources.json`, add it
+to the registry first — `url`, `official`, `fetch_method: static`, everything
+else null or zero — then hand the orchestrator that `source_id`. A source with a
+null `content_hash` is reported as changed on its first run, which is correct: it
+has never been captured.
+
+With no URL named, the run covers every source in the registry.
+
+This is the only entry point. Everything below describes how the system behaves
+once it is running.
+
 ## Core principle: code vs. judgment
 
 The single most important rule in this repo.
