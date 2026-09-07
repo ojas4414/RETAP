@@ -85,9 +85,12 @@ distribution, not a claim that the stages are equally easy.
 
 **Concurrency was an afterthought.** The first full runs processed facts serially
 because nothing said otherwise, and a run spent most of its wall-clock waiting on
-calls that could have overlapped. Making per-fact parallelism explicit cut Discover
-from 23 minutes to 4 on a subsequent run. It should have been in the design from
-the start, not discovered by watching a log.
+calls that could have overlapped. Making per-fact parallelism explicit cut the
+Validate phase from roughly twenty minutes of serial calls to about ninety
+seconds: thirteen facts dispatched in one batch and returned together. (Discover
+separately fell from 23 minutes to 4, but that was skip-if-unchanged declining to
+re-fetch, not parallelism.) It should have been in the design from the start, not
+discovered by watching a log.
 
 **`STAGE_TIMEOUT_SECONDS` is unenforceable.** A `Task` call blocks until the
 subagent returns; the orchestrator cannot poll or preempt it. The config value
@@ -115,7 +118,7 @@ boundaries from capitalization — judgment compensating for a code-side defect.
 The hash is unaffected (the concatenation is deterministic, so re-run safety
 holds), but the right fix is a block separator in `clean_content.py`.
 
-**Only `scripts/` and the hooks are tested.** 48 tests cover the deterministic
+**Only `scripts/` and the hooks are tested.** 52 tests cover the deterministic
 half. The agents are prompts, and testing them would mean asserting on model
 output; the honest alternative — golden-file tests over recorded fixtures — was
 out of scope.
@@ -159,19 +162,23 @@ Chrome windows) were wrong, and only looking at the actual state settled it.
 
 ## Honest status
 
-**Current-checkout correction (2026-09-07):** the current working tree has no
-published OKF concept documents or index. A live run reached Validate with 13
-facts, then halted at Merge because deterministic fact-ID minting was specified
-but unavailable in Merge's restricted toolbox. `scripts/mint_fact_id.py` now
-owns that operation. The next full run must create and verify the bundle before
-this repository can claim an end-to-end published demonstration.
-
 Working and demonstrated on live data: the five-stage pipeline end to end,
-producing 13 OKF concept documents with cross-links and an index; skip-if-unchanged
+producing the **12 OKF concept documents and index** now in `knowledge/`;
+skip-if-unchanged
 (a source with a matching hash is skipped without a fetch); the static ↔
 JS-rendered fetch-method flip and its memoization; deterministic cleaning verified
 by identical hashes across separate renders; and all four hooks blocking real
 violations.
+
+The bundle's content-derived `fact_id`s are reproducible: running
+`scripts/mint_fact_id.py` on a published document's concept and value returns
+that document's exact identifier.
+
+An earlier run did halt at Merge because deterministic ID minting was specified
+but unavailable in Merge's toolbox — an LLM was being asked to compute a SHA-256.
+`scripts/mint_fact_id.py` and a scoped permission fixed it, and that is the
+sharpest example in this project of the code-vs-judgment line being drawn in the
+wrong place.
 
 Not finished: the bundle in this repo is regenerated per run rather than
 accumulated across many, so document count depends on the sources registered;

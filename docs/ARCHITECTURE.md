@@ -84,8 +84,10 @@ Merge. That is deliberate: Merge can then be tested on "produces no write" the
 same way it is tested on every other verdict.
 
 **Merge** — the only stage permitted to decide *not* to write. Acts on the verdict
-against a staging layer, mints `fact_id`, and hands Publish a verdict plus changed
-fields — never finished markdown.
+against a staging layer, mints `fact_id` via `scripts/mint_fact_id.py`, and hands
+Publish a verdict plus changed fields — never finished markdown. The ID is derived
+from the fact's own content, so parallel Merge instances need no shared counter
+and the same fact re-extracted later keeps its identity.
 
 **Publish** — the OKF specialist. Templated frontmatter, written prose, and prose
 only where the value actually changed. A corroboration updates counts and

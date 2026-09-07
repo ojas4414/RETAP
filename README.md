@@ -154,6 +154,11 @@ error: a broken hook must never wedge the pipeline.
   document mentions another concept; nothing infers relatedness beyond that.
 - **The trusted-domain list is short by design.** Unlisted domains score low
   *pending review* and are flagged, never silently accepted or rejected.
+- **The usable-content check is length-based.** A page that comes back
+  non-trivially long passes it, so GitHub's 2.7KB "Uh oh! There was an error
+  while loading" shell was accepted as content and yielded zero facts. Detecting
+  *worthless* content, as opposed to *absent* content, needs more than a length
+  threshold.
 - **Contradictions escalate to a human.** After one automatic re-verification, an
   unresolved disagreement is written as a `flagged_conflict` with both values and
   both sources. The system never picks a winner.
